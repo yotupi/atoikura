@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f4ee">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="あといくら">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>あといくら</title>
+  <style>
+    :root{
+      color-scheme: light;
+      --bg:#f7f4ee;
+      --surface:#fffdf9;
+      --surface-2:#f0ece4;
+      --text:#1d1d1f;
+      --muted:#77716a;
+      --border:#ddd7ce;
+      --accent:#20201f;
+      --danger:#b42318;
+      --warn:#8a5a00;
+      --ok:#226a3b;
+      --shadow:0 10px 30px rgba(34,30,24,.07);
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg)}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Yu Gothic",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100dvh;
+      -webkit-font-smoothing:antialiased;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{
+      width:min(100%, 520px);
+      margin:0 auto;
+      padding:calc(18px + env(safe-area-inset-top)) 18px calc(110px + env(safe-area-inset-bottom));
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:20px;
+    }
+    .eyebrow{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+    h1{font-size:24px;line-height:1.15;margin:4px 0 0;font-weight:800;letter-spacing:-.03em}
+    .icon-btn{
+      width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+      background:var(--surface);display:grid;place-items:center;color:var(--text);
+      box-shadow:0 3px 10px rgba(34,30,24,.04);
+    }
+    .hero{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:24px;
+      box-shadow:var(--shadow);
+    }
+    .hero-label{font-size:14px;color:var(--muted);font-weight:700}
+    .hero-amount{
+      font-size:clamp(42px,12vw,58px);line-height:1;
+      font-weight:850;letter-spacing:-.055em;margin:10px 0 18px;
+      font-variant-numeric:tabular-nums;
+    }
+    .progress{height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden}
+    .progress > div{height:100%;background:var(--accent);border-radius:999px;transition:width .25s ease}
+    .progress-row{display:flex;justify-content:space-between;gap:12px;margin-top:9px;font-size:13px;color:var(--muted)}
+    .status{
+      margin-top:18px;padding:12px 14px;border-radius:16px;background:var(--surface-2);
+      display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;
+    }
+    .status-dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+    .status.warn .status-dot{background:var(--warn)}
+    .status.danger .status-dot{background:var(--danger)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .card{
+      background:var(--surface);border:1px solid var(--border);border-radius:22px;
+      padding:17px;min-width:0;
+    }
+    .card-label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+    .card-value{font-size:24px;font-weight:820;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+    .card-sub{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.4}
+    .section{margin-top:28px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+    .section-title{font-size:17px;font-weight:800;letter-spacing:-.02em}
+    .text-btn{border:0;background:none;color:var(--muted);padding:8px 0;font-weight:700}
+    .assets{
+      padding:20px;border-radius:22px;background:var(--surface);border:1px solid var(--border);
+    }
+    .assets-top{display:flex;justify-content:space-between;gap:10px;align-items:end}
+    .assets-value{font-size:30px;font-weight:850;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+    .assets-rate{font-size:13px;color:var(--muted);text-align:right}
+    .formula{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+    .list{display:flex;flex-direction:column;gap:9px}
+    .empty{
+      padding:26px 18px;text-align:center;color:var(--muted);border:1px dashed var(--border);
+      border-radius:20px;font-size:14px;background:rgba(255,255,255,.3)
+    }
+    .expense{
+      display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;
+      background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:12px;
+    }
+    .cat{
+      width:44px;height:44px;border-radius:14px;background:var(--surface-2);
+      display:grid;place-items:center;font-size:20px
+    }
+    .expense-main{min-width:0}
+    .expense-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .expense-meta{font-size:12px;color:var(--muted);margin-top:3px}
+    .expense-side{text-align:right}
+    .expense-amount{font-weight:800;font-variant-numeric:tabular-nums}
+    .delete{
+      border:0;background:none;color:var(--muted);font-size:12px;padding:5px 0 0 10px;
+    }
+    .fab-wrap{
+      position:fixed;left:0;right:0;bottom:0;
+      padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+      background:linear-gradient(to top,var(--bg) 70%,rgba(247,244,238,0));
+      pointer-events:none;
+    }
+    .fab{
+      pointer-events:auto;width:min(calc(100% - 36px),484px);margin:0 auto;display:block;
+      min-height:58px;border:0;border-radius:18px;background:var(--accent);color:white;
+      font-weight:800;font-size:17px;box-shadow:0 12px 28px rgba(30,30,30,.18);
+    }
+    dialog{
+      width:min(calc(100% - 24px),480px);max-height:min(86dvh,760px);
+      border:0;border-radius:26px;padding:0;background:var(--surface);color:var(--text);
+      box-shadow:0 24px 70px rgba(0,0,0,.22);
+    }
+    dialog::backdrop{background:rgba(0,0,0,.36);backdrop-filter:blur(3px)}
+    .modal{padding:22px}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .modal-title{font-size:21px;font-weight:850;letter-spacing:-.03em}
+    .close{border:0;background:var(--surface-2);width:38px;height:38px;border-radius:50%;font-size:20px}
+    .field{margin-top:15px}
+    label{display:block;font-size:13px;font-weight:750;margin-bottom:7px}
+    input,select{
+      width:100%;min-height:50px;border:1px solid var(--border);border-radius:14px;
+      background:white;color:var(--text);padding:12px 14px;font-size:16px;outline:none;
+    }
+    input:focus,select:focus{border-color:#777}
+    .money-input{font-size:26px;font-weight:800;letter-spacing:-.025em}
+    .preview{
+      margin-top:16px;padding:15px;border-radius:16px;background:var(--surface-2);
+      font-size:13px;line-height:1.55;
+    }
+    .preview strong{font-size:18px}
+    .primary{
+      width:100%;min-height:52px;border:0;border-radius:16px;background:var(--accent);
+      color:white;font-weight:800;margin-top:18px;
+    }
+    .secondary{
+      width:100%;min-height:48px;border:1px solid var(--border);border-radius:16px;
+      background:white;color:var(--text);font-weight:750;margin-top:10px;
+    }
+    .danger-btn{color:var(--danger)}
+    .hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px}
+    .notice{font-size:13px;color:var(--danger);min-height:18px;margin-top:9px}
+    .backup-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .file-label{
+      display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;
+      border:1px solid var(--border);border-radius:16px;background:white;font-size:14px;font-weight:750;
+    }
+    .file-label input{display:none}
+    @media (max-width:360px){
+      .app{padding-left:14px;padding-right:14px}
+      .hero{padding:20px}
+      .grid{grid-template-columns:1fr}
+      .backup-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <header>
+      <div>
+        <div class="eyebrow" id="monthLabel">今月</div>
+        <h1>あといくら</h1>
+      </div>
+      <button class="icon-btn" id="settingsBtn" type="button" aria-label="設定">⚙︎</button>
+    </header>
+
+    <section class="hero" aria-live="polite">
+      <div class="hero-label">今月あと使っていいお金</div>
+      <div class="hero-amount" id="remainingAmount">¥0</div>
+      <div class="progress" aria-label="予算消化率"><div id="progressBar"></div></div>
+      <div class="progress-row">
+        <span id="spentOfBudget">¥0 / ¥0 使用</span>
+        <span id="spentPercent">0%</span>
+      </div>
+      <div class="status" id="paceStatus">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="paceText">設定すると支出ペースが見えます</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-label">今月使った</div>
+        <div class="card-value" id="spentAmount">¥0</div>
+        <div class="card-sub" id="forecastText">月末予測 —</div>
+      </article>
+      <article class="card">
+        <div class="card-label">1日あたり使える</div>
+        <div class="card-value" id="dailyAmount">¥0</div>
+        <div class="card-sub" id="daysText">残り — 日</div>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">お金全体</div>
+      </div>
+      <div class="assets">
+        <div class="assets-top">
+          <div>
+            <div class="card-label">推定の全財産</div>
+            <div class="assets-value" id="assetAmount">¥0</div>
+          </div>
+          <div class="assets-rate" id="assetRate">今月支出 0%</div>
+        </div>
+        <div class="formula" id="assetFormula">月初の貯金 + 今月の手取り − 今月の支出</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">最近の支出</div>
+        <button class="text-btn" id="showAllBtn" type="button">すべて表示</button>
+      </div>
+      <div class="list" id="expenseList"></div>
+    </section>
+  </main>
+
+  <div class="fab-wrap">
+    <button class="fab" id="addBtn" type="button">＋ 支出を追加</button>
+  </div>
+
+  <dialog id="expenseDialog">
+    <form class="modal" id="expenseForm">
+      <div class="modal-head">
+        <div class="modal-title">支出を追加</div>
+        <button class="close" type="button" data-close="expenseDialog" aria-label="閉じる">×</button>
+      </div>
+      <div class="field">
+        <label for="amountInput">金額</label>
+        <input class="money-input" id="amountInput" name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="0" required>
+      </div>
+      <div class="field">
+        <label for="nameInput">内容</label>
+        <input id="nameInput" name="name" type="text" maxlength="40" placeholder="例：ランチ" required>
+      </div>
+      <div class="field">
+        <label for="categoryInput">カテゴリー</label>
+        <select id="categoryInput" name="category">
+          <option>食費</option>
+          <option>服</option>
+          <option>交際費</option>
+          <option>趣味</option>
+          <option>交通</option>
+          <option>日用品</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="dateInput">日付</label>
+        <input id="dateInput" name="date" type="date" required>
+      </div>
+      <div class="preview" id="expensePreview">
+        登録後の「あと使える額」をここに表示します。
+      </div>
+      <div class="notice" id="expenseError"></div>
+      <button class="primary" type="submit">この支出を登録</button>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form class="modal" id="settingsForm">
+      <div class="modal-head">
+        <div class="modal-title" id="settingsTitle">今月の設定</div>
+        <button class="close" type="button" data-close="settingsDialog" aria-label="閉じる">×</button>
+      </div>
+      <div class="field">
+        <label for="budgetInput">今月使っていい金額</label>
+        <input id="budgetInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="100000" required>
+        <div class="hint">この金額を超えないことを、このアプリの基準にします。</div>
+      </div>
+      <div class="field">
+        <label for="incomeInput">今月の手取り</label>
+        <input id="incomeInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="220000" required>
+      </div>
+      <div class="field">
+        <label for="savingsInput">月初の貯金残高</label>
+        <input id="savingsInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="1000000" required>
+        <div class="hint">今月の手取りを振り込まれる前の、銀行などにあるお金。二重計上を防ぐため分けています。</div>
+      </div>
+      <div class="notice" id="settingsError"></div>
+      <button class="primary" type="submit">設定を保存</button>
+
+      <div class="section" style="margin-top:26px">
+        <div class="section-title" style="margin-bottom:10px">バックアップ</div>
+        <div class="backup-row">
+          <button class="secondary" id="exportBtn" type="button">書き出す</button>
+          <label class="file-label">読み込む<input id="importInput" type="file" accept="application/json,.json"></label>
+        </div>
+        <div class="hint">iPhone内のデータだけを使います。機種変更やSafariのデータ削除に備えて、ときどき書き出してください。</div>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+  (() => {
+    const DB_NAME = "atoikura-db";
+    const DB_VERSION = 1;
+    const EXPENSE_STORE = "expenses";
+    const SETTINGS_STORE = "settings";
+    const CATS = {"食費":"🍚","服":"👕","交際費":"👥","趣味":"🎧","交通":"🚃","日用品":"🧴","その他":"・"};
+    let db;
+    let expenses = [];
+    let monthSettings = null;
+    let showAll = false;
+
+    const $ = (id) => document.getElementById(id);
+    const yen = (n) => new Intl.NumberFormat("ja-JP",{style:"currency",currency:"JPY",maximumFractionDigits:0}).format(Math.round(Number(n)||0));
+    const pad = (n) => String(n).padStart(2,"0");
+    const todayDate = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    };
+    const monthKeyFromDate = (dateStr) => dateStr.slice(0,7);
+    const currentMonthKey = () => todayDate().slice(0,7);
+    const currentMonthLabel = () => {
+      const [y,m] = currentMonthKey().split("-");
+      return `${y}年${Number(m)}月`;
+    };
+    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+
+    function openDB(){
+      return new Promise((resolve,reject)=>{
+        const req = indexedDB.open(DB_NAME,DB_VERSION);
+        req.onupgradeneeded = () => {
+          const d = req.result;
+          if(!d.objectStoreNames.contains(EXPENSE_STORE)){
+            const s = d.createObjectStore(EXPENSE_STORE,{keyPath:"id",autoIncrement:true});
+            s.createIndex("date","date");
+          }
+          if(!d.objectStoreNames.contains(SETTINGS_STORE)){
+            d.createObjectStore(SETTINGS_STORE,{keyPath:"month"});
+          }
+        };
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=()=>reject(req.error);
+      });
+    }
+    function tx(store, mode="readonly"){ return db.transaction(store,mode).objectStore(store); }
+    function reqPromise(req){ return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result); req.onerror=()=>rej(req.error);}); }
+    async function getAllExpenses(){ return await reqPromise(tx(EXPENSE_STORE).getAll()); }
+    async function getSettings(month){ return await reqPromise(tx(SETTINGS_STORE).get(month)); }
+    async function putSettings(obj){ return await reqPromise(tx(SETTINGS_STORE,"readwrite").put(obj)); }
+    async function addExpense(obj){ return await reqPromise(tx(EXPENSE_STORE,"readwrite").add(obj)); }
+    async function deleteExpense(id){ return await reqPromise(tx(EXPENSE_STORE,"readwrite").delete(id)); }
+    async function clearStore(store){
+      return await reqPromise(tx(store,"readwrite").clear());
+    }
+
+    function monthExpenses(){
+      const key=currentMonthKey();
+      return expenses.filter(e=>monthKeyFromDate(e.date)===key);
+    }
+    function spent(){
+      return monthExpenses().reduce((sum,e)=>sum+Number(e.amount||0),0);
+    }
+    function dateStats(){
+      const d=new Date();
+      const year=d.getFullYear(), month=d.getMonth(), day=d.getDate();
+      const daysInMonth=new Date(year,month+1,0).getDate();
+      return {day,daysInMonth,remainingDays:Math.max(1,daysInMonth-day+1),elapsedRatio:day/daysInMonth};
+    }
+    function metrics(){
+      const s=spent();
+      const budget=Number(monthSettings?.budget||0);
+      const income=Number(monthSettings?.income||0);
+      const savings=Number(monthSettings?.savings||0);
+      const remain=budget-s;
+      const ds=dateStats();
+      const spentRate=budget>0?s/budget:0;
+      const forecast=ds.day>0?s/ds.day*ds.daysInMonth:0;
+      const assets=savings+income-s;
+      const startingAssets=savings+income;
+      const assetSpentRate=startingAssets>0?s/startingAssets:0;
+      return {s,budget,income,savings,remain,spentRate,forecast,assets,assetSpentRate,...ds};
+    }
+
+    function paceInfo(m){
+      if(!m.budget) return {className:"",text:"今月の予算を設定してください"};
+      if(m.remain < 0) return {className:"danger",text:`予算を ${yen(Math.abs(m.remain))} オーバーしています`};
+      const diff=m.spentRate-m.elapsedRatio;
+      if(diff>0.15) return {className:"danger",text:"使いすぎペースです"};
+      if(diff>0.05) return {className:"warn",text:"少し早めのペースです"};
+      return {className:"",text:"いいペースです"};
+    }
+
+    function render(){
+      const m=metrics();
+      $("monthLabel").textContent=currentMonthLabel();
+      $("remainingAmount").textContent=yen(Math.max(0,m.remain));
+      $("spentOfBudget").textContent=`${yen(m.s)} / ${yen(m.budget)} 使用`;
+      $("spentPercent").textContent=m.budget?`${Math.round(m.spentRate*100)}%`:"0%";
+      $("progressBar").style.width=`${Math.min(100,Math.max(0,m.spentRate*100))}%`;
+      $("spentAmount").textContent=yen(m.s);
+      $("forecastText").textContent=m.s>0?`月末予測 ${yen(m.forecast)}`:"まだ支出はありません";
+      $("dailyAmount").textContent=yen(Math.max(0,m.remain)/m.remainingDays);
+      $("daysText").textContent=`今日を含めて残り ${m.remainingDays} 日`;
+      $("assetAmount").textContent=yen(Math.max(0,m.assets));
+      $("assetRate").textContent=`今月支出 ${Math.round(m.assetSpentRate*1000)/10}%`;
+      $("assetFormula").textContent=`${yen(m.savings)} + ${yen(m.income)} − ${yen(m.s)} = ${yen(m.assets)}`;
+      const p=paceInfo(m);
+      $("paceStatus").className=`status ${p.className}`;
+      $("paceText").textContent=p.text;
+
+      const list=monthExpenses().slice().sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+      const visible=showAll?list:list.slice(0,5);
+      $("showAllBtn").textContent=showAll?"5件だけ":"すべて表示";
+      $("showAllBtn").style.visibility=list.length>5?"visible":"hidden";
+      $("expenseList").innerHTML=visible.length?visible.map(e=>`
+        <article class="expense">
+          <div class="cat" aria-hidden="true">${CATS[e.category]||"・"}</div>
+          <div class="expense-main">
+            <div class="expense-name">${escapeHtml(e.name)}</div>
+            <div class="expense-meta">${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))} · ${escapeHtml(e.category)}</div>
+          </div>
+          <div class="expense-side">
+            <div class="expense-amount">−${yen(e.amount)}</div>
+            <button type="button" class="delete" data-delete="${e.id}" aria-label="${escapeHtml(e.name)}を削除">削除</button>
+          </div>
+        </article>`).join(""):`<div class="empty">まだ支出はありません。<br>使ったらすぐ登録すると、残り予算が更新されます。</div>`;
+
+      document.querySelectorAll("[data-delete]").forEach(btn=>{
+        btn.addEventListener("click",async()=>{
+          const id=Number(btn.dataset.delete);
+          if(confirm("この支出を削除しますか？")){
+            await deleteExpense(id);
+            expenses=await getAllExpenses();
+            render();
+          }
+        });
+      });
+    }
+
+    function openExpense(){
+      $("dateInput").value=todayDate();
+      $("amountInput").value="";
+      $("nameInput").value="";
+      $("categoryInput").value="食費";
+      $("expenseError").textContent="";
+      updatePreview();
+      $("expenseDialog").showModal();
+      setTimeout(()=>$("amountInput").focus(),50);
+    }
+    function updatePreview(){
+      const amount=Math.max(0,Number($("amountInput").value||0));
+      const m=metrics();
+      const after=m.remain-amount;
+      if(!amount){
+        $("expensePreview").innerHTML="金額を入れると、登録後の残り予算を確認できます。";
+        return;
+      }
+      const daily=Math.max(0,after)/m.remainingDays;
+      $("expensePreview").innerHTML=`登録すると<br><strong>あと ${yen(Math.max(0,after))}</strong><br>1日あたりの目安 ${yen(daily)}${after<0?`<br><span style="color:var(--danger);font-weight:800">予算を ${yen(Math.abs(after))} 超えます</span>`:""}`;
+    }
+
+    function fillSettings(){
+      $("settingsTitle").textContent=`${currentMonthLabel()}の設定`;
+      $("budgetInput").value=monthSettings?.budget ?? "";
+      $("incomeInput").value=monthSettings?.income ?? "";
+      $("savingsInput").value=monthSettings?.savings ?? "";
+      $("settingsError").textContent="";
+    }
+
+    async function exportData(){
+      const allSettings=await reqPromise(tx(SETTINGS_STORE).getAll());
+      const allExpenses=await getAllExpenses();
+      const payload={app:"atoikura",version:1,exportedAt:new Date().toISOString(),settings:allSettings,expenses:allExpenses};
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=`atoikura-backup-${todayDate()}.json`;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+
+    async function importData(file){
+      const text=await file.text();
+      let payload;
+      try{ payload=JSON.parse(text); }catch{ throw new Error("JSONとして読み込めませんでした"); }
+      if(payload?.app!=="atoikura" || !Array.isArray(payload.settings) || !Array.isArray(payload.expenses)){
+        throw new Error("このアプリのバックアップファイルではありません");
+      }
+      if(!confirm("現在のデータをバックアップ内容で置き換えますか？")) return;
+      await clearStore(SETTINGS_STORE);
+      await clearStore(EXPENSE_STORE);
+      for(const s of payload.settings) await putSettings(s);
+      for(const e of payload.expenses){
+        const copy={...e}; delete copy.id;
+        await addExpense(copy);
+      }
+      monthSettings=await getSettings(currentMonthKey());
+      expenses=await getAllExpenses();
+      fillSettings();
+      render();
+      alert("バックアップを読み込みました");
+    }
+
+    async function init(){
+      db=await openDB();
+      expenses=await getAllExpenses();
+      monthSettings=await getSettings(currentMonthKey());
+      $("dateInput").value=todayDate();
+
+      $("addBtn").addEventListener("click",()=>{
+        if(!monthSettings){ fillSettings(); $("settingsDialog").showModal(); return; }
+        openExpense();
+      });
+      $("settingsBtn").addEventListener("click",()=>{fillSettings();$("settingsDialog").showModal();});
+      $("showAllBtn").addEventListener("click",()=>{showAll=!showAll;render();});
+      document.querySelectorAll("[data-close]").forEach(btn=>btn.addEventListener("click",()=>$(btn.dataset.close).close()));
+      $("amountInput").addEventListener("input",updatePreview);
+
+      $("expenseForm").addEventListener("submit",async(e)=>{
+        e.preventDefault();
+        const amount=Math.round(Number($("amountInput").value));
+        const name=$("nameInput").value.trim();
+        const date=$("dateInput").value;
+        const category=$("categoryInput").value;
+        if(!Number.isFinite(amount)||amount<=0||!name||!date){
+          $("expenseError").textContent="金額・内容・日付を確認してください。";
+          return;
+        }
+        await addExpense({amount,name,date,category,createdAt:new Date().toISOString()});
+        expenses=await getAllExpenses();
+        $("expenseDialog").close();
+        render();
+      });
+
+      $("settingsForm").addEventListener("submit",async(e)=>{
+        e.preventDefault();
+        const budget=Math.round(Number($("budgetInput").value));
+        const income=Math.round(Number($("incomeInput").value));
+        const savings=Math.round(Number($("savingsInput").value));
+        if([budget,income,savings].some(v=>!Number.isFinite(v)||v<0)){
+          $("settingsError").textContent="0円以上の金額を入力してください。";
+          return;
+        }
+        monthSettings={month:currentMonthKey(),budget,income,savings};
+        await putSettings(monthSettings);
+        $("settingsDialog").close();
+        render();
+      });
+
+      $("exportBtn").addEventListener("click",exportData);
+      $("importInput").addEventListener("change",async(e)=>{
+        const file=e.target.files?.[0]; if(!file) return;
+        try{ await importData(file); }catch(err){ alert(err.message||"読み込みに失敗しました"); }
+        e.target.value="";
+      });
+
+      render();
+      if(!monthSettings){
+        fillSettings();
+        $("settingsDialog").showModal();
+      }
+      if("serviceWorker" in navigator){
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      }
+    }
+
+    init().catch(err=>{
+      console.error(err);
+      document.body.innerHTML=`<main class="app"><div class="empty">アプリの起動に失敗しました。Safariで開き直してください。</div></main>`;
+    });
+  })();
+  </script>
+</body>
+</html>
