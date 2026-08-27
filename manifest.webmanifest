@@ -1,6 +1,6 @@
 {
-  "name": "あといくら - 使いすぎ防止お小遣い帳",
-  "short_name": "あといくら",
+  "name": "@ikura - 使いすぎ防止お小遣い帳",
+  "short_name": "@ikura",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f7f4ee",

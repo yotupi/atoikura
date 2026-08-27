@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f7f4ee">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="あといくら">
+  <meta name="apple-mobile-web-app-title" content="@ikura">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icon-192.png">
-  <title>あといくら</title>
+  <title>@ikura</title>
   <style>
     :root{
       color-scheme: light;
@@ -98,6 +98,19 @@
     .assets-value{font-size:30px;font-weight:850;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
     .assets-rate{font-size:13px;color:var(--muted);text-align:right}
     .formula{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+    .budget-list{display:flex;flex-direction:column;gap:10px}
+    .budget-item{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 15px}
+    .budget-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .budget-name{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800}
+    .budget-emoji{font-size:18px}
+    .budget-remain{font-size:14px;font-weight:850;font-variant-numeric:tabular-nums;text-align:right}
+    .budget-item.over .budget-remain{color:var(--danger)}
+    .budget-item .progress{height:7px;margin-top:10px}
+    .budget-meta{display:flex;justify-content:space-between;gap:10px;margin-top:7px;font-size:11px;color:var(--muted)}
+    .category-settings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .category-setting{min-width:0}
+    .category-setting label{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px}
+    .category-setting input{min-height:46px;padding:10px 11px}
     .list{display:flex;flex-direction:column;gap:9px}
     .empty{
       padding:26px 18px;text-align:center;color:var(--muted);border:1px dashed var(--border);
@@ -183,13 +196,13 @@
     <header>
       <div>
         <div class="eyebrow" id="monthLabel">今月</div>
-        <h1>あといくら</h1>
+        <h1>@ikura</h1>
       </div>
       <button class="icon-btn" id="settingsBtn" type="button" aria-label="設定">⚙︎</button>
     </header>
 
     <section class="hero" aria-live="polite">
-      <div class="hero-label">今月あと使っていいお金</div>
+      <div class="hero-label">この期間あと使っていいお金</div>
       <div class="hero-amount" id="remainingAmount">¥0</div>
       <div class="progress" aria-label="予算消化率"><div id="progressBar"></div></div>
       <div class="progress-row">
@@ -204,7 +217,7 @@
 
     <section class="grid">
       <article class="card">
-        <div class="card-label">今月使った</div>
+        <div class="card-label">この期間使った</div>
         <div class="card-value" id="spentAmount">¥0</div>
         <div class="card-sub" id="forecastText">月末予測 —</div>
       </article>
@@ -217,6 +230,14 @@
 
     <section class="section">
       <div class="section-head">
+        <div class="section-title">項目ごとの予算</div>
+        <button class="text-btn" id="categorySettingsBtn" type="button">設定</button>
+      </div>
+      <div class="budget-list" id="categoryBudgetList"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
         <div class="section-title">お金全体</div>
       </div>
       <div class="assets">
@@ -225,9 +246,9 @@
             <div class="card-label">推定の全財産</div>
             <div class="assets-value" id="assetAmount">¥0</div>
           </div>
-          <div class="assets-rate" id="assetRate">今月支出 0%</div>
+          <div class="assets-rate" id="assetRate">期間支出 0%</div>
         </div>
-        <div class="formula" id="assetFormula">月初の貯金 + 今月の手取り − 今月の支出</div>
+        <div class="formula" id="assetFormula">開始時の貯金 + 今回の手取り − この期間の支出</div>
       </div>
     </section>
 
@@ -262,6 +283,7 @@
         <label for="categoryInput">カテゴリー</label>
         <select id="categoryInput" name="category">
           <option>食費</option>
+          <option>外食</option>
           <option>服</option>
           <option>交際費</option>
           <option>趣味</option>
@@ -285,23 +307,39 @@
   <dialog id="settingsDialog">
     <form class="modal" id="settingsForm">
       <div class="modal-head">
-        <div class="modal-title" id="settingsTitle">今月の設定</div>
+        <div class="modal-title" id="settingsTitle">期間の設定</div>
         <button class="close" type="button" data-close="settingsDialog" aria-label="閉じる">×</button>
       </div>
       <div class="field">
-        <label for="budgetInput">今月使っていい金額</label>
+        <label for="budgetInput">この期間に使っていい金額</label>
         <input id="budgetInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="100000" required>
         <div class="hint">この金額を超えないことを、このアプリの基準にします。</div>
       </div>
       <div class="field">
-        <label for="incomeInput">今月の手取り</label>
+        <label for="incomeInput">今回の手取り</label>
         <input id="incomeInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="220000" required>
       </div>
       <div class="field">
-        <label for="savingsInput">月初の貯金残高</label>
+        <label for="savingsInput">期間開始時の貯金残高</label>
         <input id="savingsInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="1000000" required>
-        <div class="hint">今月の手取りを振り込まれる前の、銀行などにあるお金。二重計上を防ぐため分けています。</div>
+        <div class="hint">25日の給料が入る前の、銀行などにあるお金。手取りとの二重計上を防ぐため分けています。</div>
       </div>
+
+      <div class="section" style="margin-top:24px">
+        <div class="section-title">項目ごとの予算</div>
+        <div class="hint">必要な項目だけ設定できます。0円は「予算を設定しない」扱いです。</div>
+        <div class="category-settings">
+          <div class="category-setting"><label for="catBudget-food">🍚 食費</label><input id="catBudget-food" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-dining">🍽️ 外食</label><input id="catBudget-dining" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-clothes">👕 服</label><input id="catBudget-clothes" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-social">👥 交際費</label><input id="catBudget-social" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-hobby">🎧 趣味</label><input id="catBudget-hobby" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-transport">🚃 交通</label><input id="catBudget-transport" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-daily">🧴 日用品</label><input id="catBudget-daily" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+          <div class="category-setting"><label for="catBudget-other">・ その他</label><input id="catBudget-other" type="number" min="0" step="1000" inputmode="numeric" placeholder="0"></div>
+        </div>
+      </div>
+
       <div class="notice" id="settingsError"></div>
       <button class="primary" type="submit">設定を保存</button>
 
@@ -322,7 +360,9 @@
     const DB_VERSION = 1;
     const EXPENSE_STORE = "expenses";
     const SETTINGS_STORE = "settings";
-    const CATS = {"食費":"🍚","服":"👕","交際費":"👥","趣味":"🎧","交通":"🚃","日用品":"🧴","その他":"・"};
+    const CATS = {"食費":"🍚","外食":"🍽️","服":"👕","交際費":"👥","趣味":"🎧","交通":"🚃","日用品":"🧴","その他":"・"};
+    const CATEGORY_IDS = {"食費":"food","外食":"dining","服":"clothes","交際費":"social","趣味":"hobby","交通":"transport","日用品":"daily","その他":"other"};
+    const PAYDAY = 25;
     let db;
     let expenses = [];
     let monthSettings = null;
@@ -335,12 +375,35 @@
       const d = new Date();
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     };
-    const monthKeyFromDate = (dateStr) => dateStr.slice(0,7);
-    const currentMonthKey = () => todayDate().slice(0,7);
-    const currentMonthLabel = () => {
-      const [y,m] = currentMonthKey().split("-");
-      return `${y}年${Number(m)}月`;
+    const parseDate = (dateStr) => {
+      const [y,m,d]=dateStr.split("-").map(Number);
+      return {y,m,d};
     };
+    const dateToUtcMs = (dateStr) => {
+      const {y,m,d}=parseDate(dateStr);
+      return Date.UTC(y,m-1,d);
+    };
+    const addDays = (dateStr, days) => {
+      const dt=new Date(dateToUtcMs(dateStr)+days*86400000);
+      return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth()+1)}-${pad(dt.getUTCDate())}`;
+    };
+    const formatShortDate = (dateStr) => {
+      const {m,d}=parseDate(dateStr);
+      return `${m}/${d}`;
+    };
+    function currentPeriod(){
+      const now=parseDate(todayDate());
+      let sy=now.y, sm=now.m;
+      if(now.d<PAYDAY){
+        sm-=1;
+        if(sm===0){sm=12;sy-=1;}
+      }
+      const start=`${sy}-${pad(sm)}-${pad(PAYDAY)}`;
+      let ey=sy, em=sm+1;
+      if(em===13){em=1;ey+=1;}
+      const end=`${ey}-${pad(em)}-${pad(PAYDAY-1)}`;
+      return {key:start,start,end,label:`${formatShortDate(start)}〜${formatShortDate(end)}`};
+    }
     const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 
     function openDB(){
@@ -371,18 +434,27 @@
       return await reqPromise(tx(store,"readwrite").clear());
     }
 
-    function monthExpenses(){
-      const key=currentMonthKey();
-      return expenses.filter(e=>monthKeyFromDate(e.date)===key);
+    function periodExpenses(){
+      const p=currentPeriod();
+      const start=dateToUtcMs(p.start), end=dateToUtcMs(p.end);
+      return expenses.filter(e=>{
+        const t=dateToUtcMs(e.date);
+        return t>=start && t<=end;
+      });
     }
     function spent(){
-      return monthExpenses().reduce((sum,e)=>sum+Number(e.amount||0),0);
+      return periodExpenses().reduce((sum,e)=>sum+Number(e.amount||0),0);
+    }
+    function categorySpent(category){
+      return periodExpenses().filter(e=>e.category===category).reduce((sum,e)=>sum+Number(e.amount||0),0);
     }
     function dateStats(){
-      const d=new Date();
-      const year=d.getFullYear(), month=d.getMonth(), day=d.getDate();
-      const daysInMonth=new Date(year,month+1,0).getDate();
-      return {day,daysInMonth,remainingDays:Math.max(1,daysInMonth-day+1),elapsedRatio:day/daysInMonth};
+      const p=currentPeriod();
+      const today=todayDate();
+      const totalDays=Math.round((dateToUtcMs(p.end)-dateToUtcMs(p.start))/86400000)+1;
+      const elapsedDays=Math.round((dateToUtcMs(today)-dateToUtcMs(p.start))/86400000)+1;
+      const remainingDays=Math.max(1,totalDays-elapsedDays+1);
+      return {totalDays,elapsedDays,remainingDays,elapsedRatio:Math.min(1,Math.max(0,elapsedDays/totalDays))};
     }
     function metrics(){
       const s=spent();
@@ -392,15 +464,21 @@
       const remain=budget-s;
       const ds=dateStats();
       const spentRate=budget>0?s/budget:0;
-      const forecast=ds.day>0?s/ds.day*ds.daysInMonth:0;
+      const forecast=ds.elapsedDays>0?s/ds.elapsedDays*ds.totalDays:0;
       const assets=savings+income-s;
       const startingAssets=savings+income;
       const assetSpentRate=startingAssets>0?s/startingAssets:0;
       return {s,budget,income,savings,remain,spentRate,forecast,assets,assetSpentRate,...ds};
     }
 
+    function categoryBudget(category){
+      const id=CATEGORY_IDS[category];
+      return Number(monthSettings?.categoryBudgets?.[id]||0);
+    }
+
+
     function paceInfo(m){
-      if(!m.budget) return {className:"",text:"今月の予算を設定してください"};
+      if(!m.budget) return {className:"",text:"この期間の予算を設定してください"};
       if(m.remain < 0) return {className:"danger",text:`予算を ${yen(Math.abs(m.remain))} オーバーしています`};
       const diff=m.spentRate-m.elapsedRatio;
       if(diff>0.15) return {className:"danger",text:"使いすぎペースです"};
@@ -410,23 +488,40 @@
 
     function render(){
       const m=metrics();
-      $("monthLabel").textContent=currentMonthLabel();
+      $("monthLabel").textContent=currentPeriod().label;
       $("remainingAmount").textContent=yen(Math.max(0,m.remain));
       $("spentOfBudget").textContent=`${yen(m.s)} / ${yen(m.budget)} 使用`;
       $("spentPercent").textContent=m.budget?`${Math.round(m.spentRate*100)}%`:"0%";
       $("progressBar").style.width=`${Math.min(100,Math.max(0,m.spentRate*100))}%`;
       $("spentAmount").textContent=yen(m.s);
-      $("forecastText").textContent=m.s>0?`月末予測 ${yen(m.forecast)}`:"まだ支出はありません";
+      $("forecastText").textContent=m.s>0?`期間終了時予測 ${yen(m.forecast)}`:"まだ支出はありません";
       $("dailyAmount").textContent=yen(Math.max(0,m.remain)/m.remainingDays);
       $("daysText").textContent=`今日を含めて残り ${m.remainingDays} 日`;
       $("assetAmount").textContent=yen(Math.max(0,m.assets));
-      $("assetRate").textContent=`今月支出 ${Math.round(m.assetSpentRate*1000)/10}%`;
+      $("assetRate").textContent=`期間支出 ${Math.round(m.assetSpentRate*1000)/10}%`;
       $("assetFormula").textContent=`${yen(m.savings)} + ${yen(m.income)} − ${yen(m.s)} = ${yen(m.assets)}`;
       const p=paceInfo(m);
       $("paceStatus").className=`status ${p.className}`;
       $("paceText").textContent=p.text;
 
-      const list=monthExpenses().slice().sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
+      const configured=Object.keys(CATS).map(category=>{
+        const budget=categoryBudget(category);
+        const used=categorySpent(category);
+        return {category,budget,used,remain:budget-used};
+      }).filter(x=>x.budget>0);
+      $("categoryBudgetList").innerHTML=configured.length?configured.map(x=>{
+        const rate=x.budget>0?x.used/x.budget:0;
+        return `<article class="budget-item ${x.remain<0?"over":""}">
+          <div class="budget-top">
+            <div class="budget-name"><span class="budget-emoji">${CATS[x.category]}</span>${escapeHtml(x.category)}</div>
+            <div class="budget-remain">${x.remain>=0?`あと ${yen(x.remain)}`:`${yen(Math.abs(x.remain))} 超過`}</div>
+          </div>
+          <div class="progress"><div style="width:${Math.min(100,Math.max(0,rate*100))}%"></div></div>
+          <div class="budget-meta"><span>${yen(x.used)} 使用</span><span>${yen(x.budget)} まで</span></div>
+        </article>`;
+      }).join(""):`<div class="empty">項目別予算はまだありません。<br>「設定」から服・外食などの上限を決められます。</div>`;
+
+      const list=periodExpenses().slice().sort((a,b)=> b.date.localeCompare(a.date) || b.id-a.id);
       const visible=showAll?list:list.slice(0,5);
       $("showAllBtn").textContent=showAll?"5件だけ":"すべて表示";
       $("showAllBtn").style.visibility=list.length>5?"visible":"hidden";
@@ -467,6 +562,7 @@
     }
     function updatePreview(){
       const amount=Math.max(0,Number($("amountInput").value||0));
+      const category=$("categoryInput").value;
       const m=metrics();
       const after=m.remain-amount;
       if(!amount){
@@ -474,21 +570,42 @@
         return;
       }
       const daily=Math.max(0,after)/m.remainingDays;
-      $("expensePreview").innerHTML=`登録すると<br><strong>あと ${yen(Math.max(0,after))}</strong><br>1日あたりの目安 ${yen(daily)}${after<0?`<br><span style="color:var(--danger);font-weight:800">予算を ${yen(Math.abs(after))} 超えます</span>`:""}`;
+      const catBudget=categoryBudget(category);
+      const catAfter=catBudget-categorySpent(category)-amount;
+      const catLine=catBudget>0?`<br>${CATS[category]} ${escapeHtml(category)}：${catAfter>=0?`あと ${yen(catAfter)}`:`<span style="color:var(--danger);font-weight:800">${yen(Math.abs(catAfter))} 超過</span>`}`:"";
+      $("expensePreview").innerHTML=`登録すると<br><strong>全体 あと ${yen(Math.max(0,after))}</strong><br>1日あたりの目安 ${yen(daily)}${catLine}${after<0?`<br><span style="color:var(--danger);font-weight:800">全体予算を ${yen(Math.abs(after))} 超えます</span>`:""}`;
     }
 
     function fillSettings(){
-      $("settingsTitle").textContent=`${currentMonthLabel()}の設定`;
+      $("settingsTitle").textContent=`${currentPeriod().label} の設定`;
       $("budgetInput").value=monthSettings?.budget ?? "";
       $("incomeInput").value=monthSettings?.income ?? "";
       $("savingsInput").value=monthSettings?.savings ?? "";
+      for(const [category,id] of Object.entries(CATEGORY_IDS)){
+        $("catBudget-"+id).value=monthSettings?.categoryBudgets?.[id] ?? "";
+      }
       $("settingsError").textContent="";
+    }
+
+    async function loadCurrentSettings(){
+      const p=currentPeriod();
+      let current=await getSettings(p.key);
+      if(current) return current;
+      // Ver.1の「YYYY-MM」設定があれば、初回だけ現在の25日始まり期間へ引き継ぐ。
+      const legacyKey=todayDate().slice(0,7);
+      const legacy=await getSettings(legacyKey);
+      if(legacy){
+        current={...legacy,month:p.key,categoryBudgets:legacy.categoryBudgets||{}};
+        await putSettings(current);
+        return current;
+      }
+      return null;
     }
 
     async function exportData(){
       const allSettings=await reqPromise(tx(SETTINGS_STORE).getAll());
       const allExpenses=await getAllExpenses();
-      const payload={app:"atoikura",version:1,exportedAt:new Date().toISOString(),settings:allSettings,expenses:allExpenses};
+      const payload={app:"atoikura",version:2,exportedAt:new Date().toISOString(),settings:allSettings,expenses:allExpenses};
       const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a");
@@ -513,7 +630,7 @@
         const copy={...e}; delete copy.id;
         await addExpense(copy);
       }
-      monthSettings=await getSettings(currentMonthKey());
+      monthSettings=await loadCurrentSettings();
       expenses=await getAllExpenses();
       fillSettings();
       render();
@@ -523,7 +640,7 @@
     async function init(){
       db=await openDB();
       expenses=await getAllExpenses();
-      monthSettings=await getSettings(currentMonthKey());
+      monthSettings=await loadCurrentSettings();
       $("dateInput").value=todayDate();
 
       $("addBtn").addEventListener("click",()=>{
@@ -531,9 +648,11 @@
         openExpense();
       });
       $("settingsBtn").addEventListener("click",()=>{fillSettings();$("settingsDialog").showModal();});
+      $("categorySettingsBtn").addEventListener("click",()=>{fillSettings();$("settingsDialog").showModal();});
       $("showAllBtn").addEventListener("click",()=>{showAll=!showAll;render();});
       document.querySelectorAll("[data-close]").forEach(btn=>btn.addEventListener("click",()=>$(btn.dataset.close).close()));
       $("amountInput").addEventListener("input",updatePreview);
+      $("categoryInput").addEventListener("change",updatePreview);
 
       $("expenseForm").addEventListener("submit",async(e)=>{
         e.preventDefault();
@@ -560,7 +679,16 @@
           $("settingsError").textContent="0円以上の金額を入力してください。";
           return;
         }
-        monthSettings={month:currentMonthKey(),budget,income,savings};
+        const categoryBudgets={};
+        for(const id of Object.values(CATEGORY_IDS)){
+          const v=Math.round(Number($("catBudget-"+id).value||0));
+          if(!Number.isFinite(v)||v<0){
+            $("settingsError").textContent="項目別予算は0円以上で入力してください。";
+            return;
+          }
+          categoryBudgets[id]=v;
+        }
+        monthSettings={month:currentPeriod().key,budget,income,savings,categoryBudgets};
         await putSettings(monthSettings);
         $("settingsDialog").close();
         render();
